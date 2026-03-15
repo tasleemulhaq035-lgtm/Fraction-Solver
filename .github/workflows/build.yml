@@ -23,12 +23,13 @@ jobs:
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython==0.29.33 virtualenv
 
-      - name: 🚀 Build the App (The Final 15 Min Wait)
-        # THE MAGIC 'yes |' IS BACK TO SIGN THE PAPERWORK!
-        run: yes | buildozer -v android debug
+      - name: 🚀 Build the App (The Real Final Run)
+        run: |
+          set +o pipefail
+          yes | buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
         with:
-          name: Retro-Fraction-Solver
+          name: Fraction-Solver-App
           path: bin/*.apk
