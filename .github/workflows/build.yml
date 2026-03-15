@@ -36,7 +36,6 @@ jobs:
           unzip -q cmdline-tools.zip
           rm cmdline-tools.zip
 
-          # THE FIX: Rename it FIRST, then move it!
           mv cmdline-tools latest
           mkdir -p "$SDK_ROOT/cmdline-tools"
           mv latest "$SDK_ROOT/cmdline-tools/"
@@ -51,7 +50,8 @@ jobs:
 
           # Download and install NDK
           echo "Downloading Android NDK..."
-          wget -q https://dl.google.com/android/repository/android-ndk-r23c-linux-x86_64.zip -O ndk.zip
+          # THE FIX: Removed the "-x86_64" from the zip file name so it doesn't 404!
+          wget -q https://dl.google.com/android/repository/android-ndk-r23c-linux.zip -O ndk.zip
           unzip -q ndk.zip
           rm ndk.zip
           mv android-ndk-r23c "$SDK_ROOT/ndk/23.1.7779620"
