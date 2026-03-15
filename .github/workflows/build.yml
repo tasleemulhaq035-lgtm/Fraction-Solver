@@ -21,16 +21,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip wget autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-
+          
           pip install buildozer==1.5.0 cython==0.29.36 virtualenv==20.24.0
 
-      - name: ☁️ Install Android SDK Command-line Tools and Build Tools
-        env:
-          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-          ANDROID_HOME: ${{ runner.temp }}/android-sdk
+      - name: ☁️ Install Android SDK and NDK
         run: |
           set -e
-          export SDK_ROOT="${ANDROID_SDK_ROOT}"
+          export SDK_ROOT="$HOME/.buildozer/android/platform/android-sdk"
           mkdir -p "$SDK_ROOT"
           cd "$SDK_ROOT"
 
@@ -39,27 +36,34 @@ jobs:
           unzip -q cmdline-tools.zip
           rm cmdline-tools.zip
 
-          mkdir -p "$SDK_ROOT/cmdline-tools/latest"
-          mv cmdline-tools/* "$SDK_ROOT/cmdline-tools/latest/"
+          # THE FIX: Rename it FIRST, then move it!
+          mv cmdline-tools latest
+          mkdir -p "$SDK_ROOT/cmdline-tools"
+          mv latest "$SDK_ROOT/cmdline-tools/"
 
           export PATH="$SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
           # Accept licenses
           yes | sdkmanager --sdk_root="$SDK_ROOT" --licenses || true
 
-          # Install required SDK components (adjust versions if your project needs different ones)
-          sdkmanager --sdk_root="$SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;30.0.3" "cmdline-tools;latest"
+          # Install required SDK components
+          sdkmanager --sdk_root="$SDK_ROOT" "platform-tools" "platforms;android-33" "build-tools;33.0.0"
 
-          # Ensure buildozer will find the SDK in its expected location
-          mkdir -p $HOME/.buildozer/android/platform
-          mv "$SDK_ROOT" $HOME/.buildozer/android/platform/android-sdk
+          # Download and install NDK
+          echo "Downloading Android NDK..."
+          wget -q https://dl.google.com/android/repository/android-ndk-r23c-linux-x86_64.zip -O ndk.zip
+          unzip -q ndk.zip
+          rm ndk.zip
+          mv android-ndk-r23c "$SDK_ROOT/ndk/23.1.7779620"
 
       - name: 🚀 Build the App
         run: |
           buildozer android debug
         env:
           BUILDOZER_LOG_LEVEL: 2
-          ANDROID_HOME: $HOME/.buildozer/android/platform/android-sdk
+          ANDROID_SDK_ROOT: ${{ format('{0}/.buildozer/android/platform/android-sdk', env.HOME) }}
+          ANDROID_HOME: ${{ format('{0}/.buildozer/android/platform/android-sdk', env.HOME) }}
+          ANDROID_NDK_ROOT: ${{ format('{0}/.buildozer/android/platform/android-sdk/ndk/23.1.7779620', env.HOME) }}
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
