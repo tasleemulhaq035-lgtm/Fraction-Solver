@@ -1,291 +1,108 @@
-# fraction_kivy_app_styled.py
-import math
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
-from kivy.utils import get_color_from_hex
+from fractions import Fraction
 
-# ------------------ Utility math functions (Unchanged) ------------------
-
-def parse_fraction(s: str):
-    s = s.strip()
-    if '/' in s:
-        p, q = s.split('/', 1)
-        num = int(p.strip() or 0)
-        den = int(q.strip())
-    else:
-        num = int(s or 0)
-        den = 1
-    if den == 0:
-        raise ZeroDivisionError("Denominator cannot be zero.")
-    if den < 0:
-        num = -num
-        den = -den
-    return num, den
-
-def prime_factors_list(n: int):
-    factors = []
-    if n <= 1: return factors
-    a = n
-    while a % 2 == 0:
-        factors.append(2)
-        a //= 2
-    f = 3
-    limit = int(math.isqrt(a)) + 1
-    while f <= limit and a > 1:
-        while a % f == 0:
-            factors.append(f)
-            a //= f
-            limit = int(math.isqrt(a)) + 1
-        f += 2
-    if a > 1:
-        factors.append(a)
-    return factors
-
-def decimal_long_division_steps(num: int, den: int, max_steps: int = 500):
-    logs = []
-    sign = '-' if num * den < 0 else ''
-    a, b = abs(num), abs(den)
-    integer_part = a // b
-    remainder = a % b
-    
-    if remainder == 0:
-        logs.append("No fractional part (exact integer).")
-        return f"{sign}{integer_part}", logs
-        
-    digits = []
-    remainder_pos = {}
-    pos = 0
-    while remainder != 0 and remainder not in remainder_pos and pos < max_steps:
-        remainder_pos[remainder] = pos
-        multiply = remainder * 10
-        digit = multiply // b
-        new_remainder = multiply % b
-        logs.append(f" Step {pos+1}: {remainder} × 10 = {multiply}  ➔  digit = {digit}, rem = {new_remainder}")
-        digits.append(str(digit))
-        remainder = new_remainder
-        pos += 1
-        
-    if remainder == 0:
-        dec_part = ''.join(digits)
-        logs.append("Terminating decimal (remainder reached 0).")
-        return f"{sign}{integer_part}.{dec_part}", logs
-    else:
-        start = remainder_pos[remainder]
-        non_rep = ''.join(digits[:start])
-        rep = ''.join(digits[start:])
-        logs.append(f"Remainder {remainder} repeated; cycle starts at position {start+1}.")
-        return f"{sign}{integer_part}.{non_rep}({rep})", logs
-
-def mixed_number_steps(num: int, den: int):
-    steps = []
-    sign = '-' if num * den < 0 else ''
-    a, b = abs(num), abs(den)
-    integer_part = a // b
-    remainder = a % b
-    if remainder == 0:
-        steps.append(f"No fractional remainder. Value = {sign}{integer_part}")
-    else:
-        steps.append(f"Mixed number = {sign}{integer_part} and {remainder}/{b}")
-    return steps
-
-def reciprocal_steps(num: int, den: int):
-    steps = []
-    if num == 0:
-        steps.append("Reciprocal undefined (numerator = 0).")
-        return steps
-    rnum, rden = den, num
-    if rden < 0:
-        rnum, rden = -rnum, -rden
-    g = math.gcd(abs(rnum), abs(rden))
-    steps.append(f"Initial reciprocal: {rnum}/{rden}")
-    if g > 1:
-        steps.append(f"Simplifying reciprocal by GCD({abs(rnum)}, {abs(rden)}) = {g}")
-        steps.append(f"Simplified reciprocal: {rnum//g}/{rden//g}")
-    else:
-        steps.append("Reciprocal is already in lowest terms.")
-    return steps
-
-def continued_fraction_steps(num: int, den: int):
-    logs = []
-    a, b = num, den
-    cf = []
-    while b != 0:
-        q = a // b
-        r = a % b
-        cf.append(q)
-        logs.append(f"{a} = {q} × {b} + {r}")
-        a, b = b, r
-    return cf, logs
-
-def simplify_by_smallest_common_divisor(num: int, den: int):
-    steps = []
-    sign = '-' if num * den < 0 else ''
-    num_abs, den_abs = abs(num), abs(den)
-
-    if den_abs != 0 and num_abs % den_abs == 0:
-        q = (num_abs // den_abs)
-        if sign: q = -q
-        steps.append(f"Denominator {den} divides numerator {num} exactly.")
-        return q, 1, steps, True
-
-    g = math.gcd(num_abs, den_abs)
-    if g == 1:
-        steps.append("Fraction is coprime (already in lowest terms).")
-        return num, den, steps, False
-
-    steps.append(f"GCD is {g}. Dividing by prime factors:")
-    pf = prime_factors_list(g)
-    temp_num, temp_den = num_abs, den_abs
-    for p in pf:
-        temp_num //= p
-        temp_den //= p
-        steps.append(f" ÷ {p}  ➔  {temp_num}/{temp_den}")
-        
-    if sign: temp_num = -temp_num
-    return temp_num, temp_den, steps, False
-
-# ------------------ Kivy Application Class ------------------
+# Set a retro arcade dark background
+Window.clearcolor = (0.1, 0.1, 0.1, 1)
 
 class FractionSolverApp(App):
-    
     def build(self):
-        Window.clearcolor = get_color_from_hex("#F4F6F9")
+        # Main layout
+        self.root = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        main_layout = BoxLayout(orientation='vertical', padding=15, spacing=15)
-        
-        # --- FIXED TOP BAR ---
-        # size_hint_y=0.12 means "Take up 12% of the screen height" instead of a fixed 80 pixels.
-        top_bar = BoxLayout(orientation='horizontal', size_hint_y=0.12, spacing=10)
-        
-        lbl = Label(
-            text="[b][color=#34495E]Fraction:[/color][/b]", 
+        # Title Label (Neon Green)
+        title = Label(
+            text="[b]RETRO FRACTION SOLVER[/b]", 
             markup=True, 
-            font_size='22sp', 
-            size_hint_x=0.35,
-            halign='right',
-            valign='middle'
+            font_size='28sp', 
+            color=(0.2, 1, 0.2, 1), 
+            size_hint=(1, 0.2)
         )
-        lbl.bind(size=lbl.setter('text_size')) 
+        self.root.add_widget(title)
+
+        # Inputs Layout (Grid for Fraction 1, Operation, Fraction 2)
+        input_grid = GridLayout(cols=3, spacing=10, size_hint=(1, 0.3))
         
-        self.entry = TextInput(
-            font_size='38sp',
-            multiline=False,
-            readonly=True,
-            halign='center',
-            background_normal='', 
-            background_color=get_color_from_hex("#FFFFFF"), 
-            foreground_color=get_color_from_hex("#2980B9"), 
-            size_hint_x=0.65
-        )
+        # Fraction 1 Boxes
+        box1 = BoxLayout(orientation='vertical', spacing=5)
+        self.num1 = TextInput(input_filter='int', font_size='28sp', halign='center', hint_text='Num')
+        self.den1 = TextInput(input_filter='int', font_size='28sp', halign='center', hint_text='Den')
+        box1.add_widget(self.num1)
+        box1.add_widget(self.den1)
         
-        # Perfect Vertical Centering Magic
-        # This calculates the exact height needed to push the text perfectly to the middle
-        def center_text(instance, *args):
-            pad_y = max(0, (instance.height - instance.line_height) / 2)
-            instance.padding = [10, pad_y, 10, pad_y]
+        # Middle Divider Label
+        op_label = Label(text="[b]VS[/b]", markup=True, font_size='30sp', color=(1, 0.8, 0, 1))
+        
+        # Fraction 2 Boxes
+        box2 = BoxLayout(orientation='vertical', spacing=5)
+        self.num2 = TextInput(input_filter='int', font_size='28sp', halign='center', hint_text='Num')
+        self.den2 = TextInput(input_filter='int', font_size='28sp', halign='center', hint_text='Den')
+        box2.add_widget(self.num2)
+        box2.add_widget(self.den2)
+
+        input_grid.add_widget(box1)
+        input_grid.add_widget(op_label)
+        input_grid.add_widget(box2)
+        
+        self.root.add_widget(input_grid)
+
+        # Buttons Layout (Chunky red and blue)
+        btn_grid = GridLayout(cols=4, spacing=10, size_hint=(1, 0.2))
+        ops = ['+', '-', 'x', '/']
+        for op in ops:
+            btn = Button(
+                text=f"[b]{op}[/b]", 
+                markup=True, 
+                font_size='35sp', 
+                background_color=(0.8, 0.2, 0.2, 1) if op in ['+', '-'] else (0.2, 0.6, 1, 1),
+                color=(1, 1, 1, 1)
+            )
+            btn.bind(on_press=lambda instance, o=op: self.calculate(o))
+            btn_grid.add_widget(btn)
             
-        self.entry.bind(height=center_text, text=center_text)
-        
-        top_bar.add_widget(lbl)
-        top_bar.add_widget(self.entry)
-        main_layout.add_widget(top_bar)
-        
-        # --- Output Text Area (Scrollable) ---
-        scroll = ScrollView(size_hint_y=0.5)
-        self.output = Label(
-            text="[color=#7F8C8D][i]Math results will appear here...[/i][/color]", 
-            markup=True, 
-            size_hint_y=None,
-            valign='top',
-            padding=(10, 10)
-        )
-        self.output.bind(
-            width=lambda *x: self.output.setter('text_size')(self.output, (self.output.width, None)),
-            texture_size=lambda *x: self.output.setter('height')(self.output, self.output.texture_size[1])
-        )
-        
-        scroll.add_widget(self.output)
-        main_layout.add_widget(scroll)
-        
-        # --- Custom Keyboard ---
-        kb_layout = BoxLayout(orientation='vertical', size_hint_y=0.4, spacing=8)
-        
-        rows = [
-            [('1', 1), ('2', 1), ('3', 1), ('DEL', 1)],
-            [('4', 1), ('5', 1), ('6', 1), ('/', 1)],
-            [('7', 1), ('8', 1), ('9', 1), ('Clear', 1)],
-            [('0', 2), ('Solve', 2)] 
-        ]
-        
-        for row in rows:
-            row_layout = BoxLayout(orientation='horizontal', spacing=8)
-            for text, weight in row:
-                bg_color = (1, 1, 1, 1) 
-                text_color = (0.2, 0.2, 0.2, 1)
-                
-                if text == 'DEL': 
-                    bg_color = get_color_from_hex("#BDC3C7")
-                elif text == 'Clear': 
-                    bg_color = get_color_from_hex("#FFCDD2")
-                    text_color = get_color_from_hex("#C0392B")
-                elif text == 'Solve': 
-                    bg_color = get_color_from_hex("#2ECC71")
-                    text_color = (1, 1, 1, 1)
-                elif text == '/':
-                    bg_color = get_color_from_hex("#ECF0F1")
-                    text_color = get_color_from_hex("#2980B9")
-                
-                btn = Button(
-                    text=f"[b]{text}[/b]", 
-                    markup=True,
-                    font_size='28sp' if text not in ['DEL', 'Clear', 'Solve'] else '22sp', 
-                    size_hint_x=weight,
-                    background_normal='', 
-                    background_color=bg_color,
-                    color=text_color
-                )
-                
-                if text == 'DEL': btn.bind(on_press=self.backspace)
-                elif text == 'Clear': btn.bind(on_press=self.clear_all)
-                elif text == 'Solve': btn.bind(on_press=self.solve_fraction)
-                else: btn.bind(on_press=lambda instance, t=text: self.type_char(t))
-                    
-                row_layout.add_widget(btn)
-            kb_layout.add_widget(row_layout)
+        self.root.add_widget(btn_grid)
+
+        # Result Label
+        self.result_label = Label(text="PRESS A BUTTON!", font_size='24sp', color=(1, 1, 1, 1), size_hint=(1, 0.3))
+        self.root.add_widget(self.result_label)
+
+        return self.root
+
+    def calculate(self, op):
+        try:
+            n1 = int(self.num1.text)
+            d1 = int(self.den1.text)
+            n2 = int(self.num2.text)
+            d2 = int(self.den2.text)
             
-        main_layout.add_widget(kb_layout)
-        return main_layout
+            if d1 == 0 or d2 == 0:
+                self.result_label.text = "ERROR: DIV BY 0"
+                self.result_label.color = (1, 0, 0, 1)
+                return
 
-    # --- Keyboard Actions ---
-    def type_char(self, char):
-        self.entry.text += char
+            f1 = Fraction(n1, d1)
+            f2 = Fraction(n2, d2)
 
-    def backspace(self, instance):
-        self.entry.text = self.entry.text[:-1]
+            if op == '+': res = f1 + f2
+            elif op == '-': res = f1 - f2
+            elif op == 'x': res = f1 * f2
+            elif op == '/': res = f1 / f2
 
-    def clear_all(self, instance):
-        self.entry.text = ""
-        self.output.text = "[color=#7F8C8D][i]Cleared.[/i][/color]"
+            self.result_label.text = f"RESULT: {res.numerator} / {res.denominator}"
+            self.result_label.color = (0.2, 1, 0.2, 1) # Neon Green success
 
-    # --- Calculation & Output Formatting ---
-    def format_line(self, text, style="body"):
-        if style == "title":
-            return f"[size=45sp][b][color=#2C3E50]{text}[/color][/b][/size]\n"
-        elif style == "subtitle":
-            return f"[size=30sp][color=#7F8C8D]{text}[/color][/size]\n"
-        elif style == "highlight":
-            return f"[size=35sp][b][color=#27AE60]{text}[/color][/b][/size]\n"
-        elif style == "h1":
-            return f"\n[size=28sp][b][color=#34495E]{text}[/color][/b][/size]\n"
-        elif style == "h2":
-            return f"[size=24sp][b][color=#8E44AD]{text}[/color][/b][/size]\n"
-        elif style == "body_bold":
-            return f"[color=#D35400][b]  • {text}[/b][/color]\n"
+        except ValueError:
+            self.result_label.text = "ENTER NUMBERS!"
+            self.result_label.color = (1, 0.5, 0, 1) # Orange warning
+
+if __name__ == '__main__':
+    FractionSolverApp().run()
+return f"[color=#D35400][b]  • {text}[/b][/color]\n"
         else: 
             return f"[color=#2C3E50][font=RobotoMono-Regular]  • {text}[/font][/color]\n"
 
