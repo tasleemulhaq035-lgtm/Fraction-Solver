@@ -22,16 +22,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           
-          # THE FIX: Unpinned Cython! Let it get the absolute latest version!
-          pip install --upgrade buildozer cython virtualenv
+          pip install buildozer==1.5.0 cython==0.29.36 virtualenv==20.24.0
 
-      - name: 🚀 Build the App (The True Final Run)
-        # THE FIX: A safe while-loop that answers "yes" without breaking the pipe!
+      - name: 🚀 Build the App
         run: |
-          (while true; do echo "y"; sleep 0.5; done) | buildozer -v android debug
+          buildozer android debug
+        env:
+          BUILDOZER_LOG_LEVEL: 2
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
         with:
           name: Fraction-Solver-App
           path: bin/*.apk
+          retention-days: 30
