@@ -20,15 +20,46 @@ jobs:
       - name: 🛠️ Install the Raw Factory Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip wget autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+
           pip install buildozer==1.5.0 cython==0.29.36 virtualenv==20.24.0
+
+      - name: ☁️ Install Android SDK Command-line Tools and Build Tools
+        env:
+          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+          ANDROID_HOME: ${{ runner.temp }}/android-sdk
+        run: |
+          set -e
+          export SDK_ROOT="${ANDROID_SDK_ROOT}"
+          mkdir -p "$SDK_ROOT"
+          cd "$SDK_ROOT"
+
+          echo "Downloading Android SDK command-line tools..."
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip
+          rm cmdline-tools.zip
+
+          mkdir -p "$SDK_ROOT/cmdline-tools/latest"
+          mv cmdline-tools/* "$SDK_ROOT/cmdline-tools/latest/"
+
+          export PATH="$SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+          # Accept licenses
+          yes | sdkmanager --sdk_root="$SDK_ROOT" --licenses || true
+
+          # Install required SDK components (adjust versions if your project needs different ones)
+          sdkmanager --sdk_root="$SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;30.0.3" "cmdline-tools;latest"
+
+          # Ensure buildozer will find the SDK in its expected location
+          mkdir -p $HOME/.buildozer/android/platform
+          mv "$SDK_ROOT" $HOME/.buildozer/android/platform/android-sdk
 
       - name: 🚀 Build the App
         run: |
           buildozer android debug
         env:
           BUILDOZER_LOG_LEVEL: 2
+          ANDROID_HOME: $HOME/.buildozer/android/platform/android-sdk
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
