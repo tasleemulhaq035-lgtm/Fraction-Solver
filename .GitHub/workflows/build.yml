@@ -1,0 +1,30 @@
+name: Build Android APK
+
+# This tells the robot to wake up every time you change a file!
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Get Your Code from the Vault
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Install the Android Factory Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libltdl-dev libffi-dev libssl-dev python3-dev zip unzip openjdk-17-jdk autoconf libtool automake
+          pip install --upgrade buildozer cython==0.29.33
+
+      - name: 🚀 Build the App (The 15 Min Wait)
+        run: yes | buildozer -v android debug
+
+      - name: 📦 Save the APK for Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Retro-Fraction-Solver
+          path: bin/*.apk
+          
