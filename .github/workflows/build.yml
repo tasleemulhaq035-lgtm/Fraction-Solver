@@ -24,7 +24,8 @@ jobs:
           pip install --upgrade buildozer cython==0.29.33 virtualenv
 
       - name: 🚀 Build the App (The Final 15 Min Wait)
-        run: buildozer -v android debug
+        # THE MAGIC 'yes |' IS BACK TO SIGN THE PAPERWORK!
+        run: yes | buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
