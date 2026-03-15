@@ -21,12 +21,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          pip install --upgrade buildozer cython==0.29.33 virtualenv
+          
+          # THE FIX: Unpinned Cython! Let it get the absolute latest version!
+          pip install --upgrade buildozer cython virtualenv
 
-      - name: 🚀 Build the App (The Real Final Run)
+      - name: 🚀 Build the App (The True Final Run)
+        # THE FIX: A safe while-loop that answers "yes" without breaking the pipe!
         run: |
-          set +o pipefail
-          yes | buildozer -v android debug
+          (while true; do echo "y"; sleep 0.5; done) | buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
