@@ -53,10 +53,12 @@ jobs:
           wget -q https://dl.google.com/android/repository/android-ndk-r23c-linux.zip -O ndk.zip
           unzip -q ndk.zip
           rm ndk.zip
+          
+          # THE FIX: Create the 'ndk' folder BEFORE moving files into it!
+          mkdir -p "$SDK_ROOT/ndk"
           mv android-ndk-r23c "$SDK_ROOT/ndk/23.1.7779620"
 
       - name: 🚀 Build the App
-        # THE FIX: The 'yes' robot is back and pipefail is disabled to prevent crashes!
         run: |
           set +o pipefail
           yes | buildozer -v android debug
