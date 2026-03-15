@@ -4,10 +4,6 @@ on:
   push:
     branches: [ main, master ]
 
-# 🛑 THIS SILENCES THE ANNOYING YELLOW NODE.JS WARNING
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -16,17 +12,22 @@ jobs:
       - name: 📥 Get Your Code from the Vault
         uses: actions/checkout@v4
 
-      # 🚀 THE BULLETPROOF BUILDOZER ACTION (No more Broken Pipes!)
-      - name: 🛠️ Build the App 
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: 🐍 Set up a Perfect Python Environment
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: master
+          python-version: '3.11'
+
+      - name: 🛠️ Install the Raw Factory Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip install --upgrade buildozer cython==0.29.33 virtualenv
+
+      - name: 🚀 Build the App (The Final 15 Min Wait)
+        run: buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
         with:
           name: Retro-Fraction-Solver
-          # This automatically grabs the exact APK file the action creates!
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
