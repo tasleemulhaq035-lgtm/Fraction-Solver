@@ -6,8 +6,8 @@ on:
 
 jobs:
   build:
-    # 🕰️ THE FIX: Use the older, ultra-stable Ubuntu 20.04 server
-    runs-on: ubuntu-20.04
+    # 🚀 THE FIX: Back to the modern, working servers!
+    runs-on: ubuntu-22.04
 
     steps:
       - name: 📥 Get Your Code from the Vault
@@ -16,21 +16,16 @@ jobs:
       - name: 🐍 Set up a Perfect Python Environment
         uses: actions/setup-python@v5
         with:
-          # 🕰️ THE FIX: Use Python 3.8. It is the most stable version for Buildozer.
-          python-version: '3.8'
+          python-version: '3.10'
 
       - name: 🛠️ Install the Raw Factory Tools
         run: |
           sudo apt-get update || true
-          # Use Java 11, which matches this older, stable server perfectly
-          sudo apt-get install -y git zip unzip openjdk-11-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           
-          # 🔧 THE FIX: Upgrade 'pip' first so it can actually find Cython!
+          # 🔧 THE FIX: Upgrade 'pip' FIRST so it never loses Cython again!
           python -m pip install --upgrade pip setuptools wheel
           pip install Cython==0.29.33 buildozer virtualenv
-          
-          # 🔧 THE FIX: Force the server to know exactly where Buildozer is installed
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 🚀 Build the App
         run: |
