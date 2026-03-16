@@ -19,14 +19,13 @@ jobs:
 
       - name: 🛠️ Install the Raw Factory Tools
         run: |
-          sudo apt-get update
+          # THE FIX: Added '|| true' so broken GitHub servers don't crash our build!
+          sudo apt-get update || true
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           
-          # THE FIX: Get the absolute newest tools and let Buildozer do the heavy lifting!
           pip install --upgrade buildozer cython virtualenv
 
       - name: 🚀 Build the App
-        # THE FIX: The 'yes' robot is back, and we are letting Buildozer download the SDK itself!
         run: |
           set +o pipefail
           yes | buildozer -v android debug
