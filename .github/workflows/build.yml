@@ -15,7 +15,8 @@ jobs:
       - name: 🐍 Set up a Perfect Python Environment
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          # THE FIX: Downgraded to 3.10. Buildozer's internal scripts hate 3.11!
+          python-version: '3.10'
 
       - name: 🛠️ Install the Raw Factory Tools
         run: |
@@ -27,7 +28,6 @@ jobs:
 
       - name: 🚀 Build the App
         run: |
-          # THE FIX: Edit buildozer.spec directly to accept licenses, and eliminate the 'yes' command!
           sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
           buildozer -v android debug
 
