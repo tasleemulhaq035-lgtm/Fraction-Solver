@@ -6,21 +6,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 🕰️ THE FIX: Use the older, ultra-stable Ubuntu 20.04 server
+    runs-on: ubuntu-20.04
 
     steps:
       - name: 📥 Get Your Code from the Vault
         uses: actions/checkout@v4
 
-      - name: ✅ Automatically Sign Licenses
-        run: sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
-
-      - name: 🚀 Build the App (Official Kivy Engine)
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: 🐍 Set up a Perfect Python Environment
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: master
+          # 🕰️ THE FIX: Use Python 3.8. It is the most stable version for Buildozer.
+          python-version: '3.8'
+
+      - name: 🛠️ Install the Raw Factory Tools
+        run: |
+          sudo apt-get update || true
+          # Use Java 11, which matches this older, stable server perfectly
+          sudo apt-get install -y git zip unzip openjdk-11-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          
+          # 🔧 THE FIX: Upgrade 'pip' first so it can actually find Cython!
+          python -m pip install --upgrade pip setuptools wheel
+          pip install Cython==0.29.33 buildozer virtualenv
+          
+          # 🔧 THE FIX: Force the server to know exactly where Buildozer is installed
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: 🚀 Build the App
+        run: |
+          sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
+          buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
