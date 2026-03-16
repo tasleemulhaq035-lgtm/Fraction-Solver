@@ -22,14 +22,14 @@ jobs:
           sudo apt-get update || true
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           
-          # THE FIX: Lock Cython to the exact version Buildozer can see!
           pip install buildozer virtualenv
           pip install cython==0.29.33
 
       - name: 🚀 Build the App
         run: |
-          set +o pipefail
-          yes | buildozer -v android debug
+          # THE FIX: Edit buildozer.spec directly to accept licenses, and eliminate the 'yes' command!
+          sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
+          buildozer -v android debug
 
       - name: 📦 Save the APK for Download
         uses: actions/upload-artifact@v4
