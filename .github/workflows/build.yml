@@ -9,52 +9,26 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: 📥 Get Your Code from the Vault
+      - name: Get Your Code from the Vault
         uses: actions/checkout@v4
 
-      - name: ☕ Set up Java 11
+      - name: Set up Java 11
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: 🛠️ Install the Raw Factory Tools
+      - name: Install the Raw Factory Tools
         run: |
           sudo apt-get update || true
-          
-          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
-          
-          pip3 install --user --upgrade pip setuptools wheel
-          
-          # 🏆 THE FIX: No more quotation marks! Just pure, raw text.
-          pip3 install --user Cython==0.29.37 buildozer virtualenv
-          
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo pip3 install Cython==0.29.37 buildozer virtualenv pep517
 
-      - name: 🚀 Build the App
-        run: |
-          export PATH=$HOME/.local/bin:$PATH
-          buildozer -v android debug
+      - name: Build the App
+        run: buildozer -v android debug
 
-      - name: 📦 Save the APK for Download
+      - name: Save the APK for Download
         uses: actions/upload-artifact@v4
         with:
           name: Fraction-Solver-App
           path: bin/*.apk
-
-      # --- NOTIFICATION SYSTEM ---
-      - name: NOTIFICATION: Build Succeeded!
-        if: success()
-        run: |
-          echo "========================================================"
-          echo "✅ SUCCESS! Your Android App is fully built and compiled!"
-          echo "Go to the 'Summary' tab and download your APK file."
-          echo "========================================================"
-
-      - name: NOTIFICATION: Build Failed!
-        if: failure()
-        run: |
-          echo "========================================================"
-          echo "❌ FAILED! The build crashed before finishing."
-          echo "Look at the 'Build the App' step above to find the error."
-          echo "========================================================"
