@@ -43,7 +43,7 @@ jobs:
           path: bin/*.apk
 
       # --- NOTIFICATION SYSTEM ---
-      - name: 🎉 NOTIFICATION: Build Succeeded!
+      - name: NOTIFICATION: Build Succeeded!
         if: success()
         run: |
           echo "========================================================"
@@ -51,7 +51,7 @@ jobs:
           echo "Go to the 'Summary' tab and download your APK file."
           echo "========================================================"
 
-      - name: 🚨 NOTIFICATION: Build Failed!
+      - name: NOTIFICATION: Build Failed!
         if: failure()
         run: |
           echo "========================================================"
