@@ -18,27 +18,24 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: 🛠️ Install the Raw OS Tools
+      - name: 🛠️ Install the Raw Factory Tools
         run: |
           sudo apt-get update || true
-          # We only install the core Linux machine parts here
-          sudo apt-get install -y git zip unzip python3-pip python3-venv autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
+          
+          # Re-added the system tools that got us to 19 minutes
+          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
+          
+          pip3 install --user --upgrade pip setuptools wheel
+          
+          # 🏆 THE FIX: Cython 0.29.37 is the exact golden version for Python 3.11 + Kivy!
+          pip3 install --user "Cython==0.29.37" buildozer virtualenv
+          
+          # Hardcode the path directly into GitHub's memory so it NEVER forgets Buildozer
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 🚀 Build the App
         run: |
-          # 🔒 THE FIX: Create a sealed Virtual Environment!
-          python3 -m venv my_build_env
-          
-          # Step inside the sealed environment
-          source my_build_env/bin/activate
-          
-          # Install the Python tools directly into this locked room
-          pip install --upgrade pip setuptools wheel
-          
-          # Fetch the highest, safest Cython version (0.29.37)
-          pip install "Cython<3.0" buildozer virtualenv pep517
-          
-          # Run buildozer without it ever losing its files
+          export PATH=$HOME/.local/bin:$PATH
           buildozer -v android debug
 
       - name: 📦 Save the APK for Download
