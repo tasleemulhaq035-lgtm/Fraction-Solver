@@ -12,11 +12,12 @@ jobs:
       - name: Get Your Code from the Vault
         uses: actions/checkout@v4
 
-      - name: Set up Java 11
+      # 🔨 THE FIX: Upgraded to Java 17 to match the new engine
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
       - name: Install the Raw Factory Tools
         run: |
@@ -25,7 +26,9 @@ jobs:
           sudo pip3 install Cython==0.29.37 buildozer virtualenv pep517
 
       - name: Build the App
-        run: buildozer -v android debug
+        run: |
+          sed -i 's/.*p4a.branch.*/p4a.branch = develop/' buildozer.spec
+          buildozer -v android debug
 
       - name: Save the APK for Download
         uses: actions/upload-artifact@v4
