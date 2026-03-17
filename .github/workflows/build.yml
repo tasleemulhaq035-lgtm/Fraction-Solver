@@ -22,17 +22,18 @@ jobs:
         run: |
           sudo apt-get update || true
           
-          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
+          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           
           pip3 install --user --upgrade pip setuptools wheel
-          pip3 install --user cython==0.29.33 buildozer virtualenv
+          
+          # THE FIX: Removed "==0.29.33" to allow the newest Cython that supports Python 3.11!
+          pip3 install --user cython buildozer virtualenv
           
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 🚀 Build the App
         run: |
           export PATH=$HOME/.local/bin:$PATH
-          # We removed the sed commands here because your spec file is now perfectly hand-coded!
           buildozer -v android debug
 
       - name: 📦 Save the APK for Download
