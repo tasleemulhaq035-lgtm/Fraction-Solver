@@ -22,15 +22,13 @@ jobs:
         run: |
           sudo apt-get update || true
           
-          # Re-added the system tools that got us to 19 minutes
           sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
           
           pip3 install --user --upgrade pip setuptools wheel
           
-          # 🏆 THE FIX: Cython 0.29.37 is the exact golden version for Python 3.11 + Kivy!
-          pip3 install --user "Cython==0.29.37" buildozer virtualenv
+          # 🏆 THE FIX: No more quotation marks! Just pure, raw text.
+          pip3 install --user Cython==0.29.37 buildozer virtualenv
           
-          # Hardcode the path directly into GitHub's memory so it NEVER forgets Buildozer
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 🚀 Build the App
