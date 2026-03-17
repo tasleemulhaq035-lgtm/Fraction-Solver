@@ -22,18 +22,20 @@ jobs:
         run: |
           sudo apt-get update || true
           
-          # 1. Install all system-level dependencies
-          sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
+          # THE FIX: We added 'python3-pep517' and 'python3-venv' directly to the Linux OS.
+          # Buildozer literally cannot ignore these tools now!
+          sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
           
-          # 2. THE FIX: Force everything into the System Python toolbox so Buildozer can't miss it
           pip3 install --user --upgrade pip setuptools wheel
-          pip3 install --user cython==0.29.33 buildozer virtualenv pep517 sh colorama
+          pip3 install --user cython==0.29.33 buildozer virtualenv
           
-          # 3. THE FIX: Hardcode the path so the environment is physically linked to the next step
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 🚀 Build the App
         run: |
+          # Reinforce the path right before building
+          export PATH=$HOME/.local/bin:$PATH
+          
           sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
           sed -i 's/.*p4a.branch.*/p4a.branch = master/' buildozer.spec
           
