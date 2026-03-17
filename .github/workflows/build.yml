@@ -22,8 +22,6 @@ jobs:
         run: |
           sudo apt-get update || true
           
-          # THE FIX: We added 'python3-pep517' and 'python3-venv' directly to the Linux OS.
-          # Buildozer literally cannot ignore these tools now!
           sudo apt-get install -y git zip unzip python3-pip python3-venv python3-pep517 autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev cython3
           
           pip3 install --user --upgrade pip setuptools wheel
@@ -33,12 +31,8 @@ jobs:
 
       - name: 🚀 Build the App
         run: |
-          # Reinforce the path right before building
           export PATH=$HOME/.local/bin:$PATH
-          
-          sed -i 's/.*android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
-          sed -i 's/.*p4a.branch.*/p4a.branch = master/' buildozer.spec
-          
+          # We removed the sed commands here because your spec file is now perfectly hand-coded!
           buildozer -v android debug
 
       - name: 📦 Save the APK for Download
@@ -46,3 +40,20 @@ jobs:
         with:
           name: Fraction-Solver-App
           path: bin/*.apk
+
+      # --- NOTIFICATION SYSTEM ---
+      - name: 🎉 NOTIFICATION: Build Succeeded!
+        if: success()
+        run: |
+          echo "========================================================"
+          echo "✅ SUCCESS! Your Android App is fully built and compiled!"
+          echo "Go to the 'Summary' tab and download your APK file."
+          echo "========================================================"
+
+      - name: 🚨 NOTIFICATION: Build Failed!
+        if: failure()
+        run: |
+          echo "========================================================"
+          echo "❌ FAILED! The build crashed before finishing."
+          echo "Look at the 'Build the App' step above to find the error."
+          echo "========================================================"
