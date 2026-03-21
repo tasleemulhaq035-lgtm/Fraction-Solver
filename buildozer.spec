@@ -6,6 +6,9 @@ title = Fraction Calculator
 # (str) Package name
 package.name = fractionsolver
 
+# (str) Icon of the application
+icon.filename = logo.png
+
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.fractionsolver
 
