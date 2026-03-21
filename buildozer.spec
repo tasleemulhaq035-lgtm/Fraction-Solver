@@ -1,7 +1,7 @@
 [app]
 
 # (str) Title of your application
-title = Fraction Solver
+title = Fraction Calculator
 
 # (str) Package name
 package.name = fractionsolver
