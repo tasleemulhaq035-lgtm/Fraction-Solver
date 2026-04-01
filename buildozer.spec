@@ -18,8 +18,11 @@ source.dir = .
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas
 
+# (str) Presplash of the application
+presplash.filename = %(source.dir)s/loading.png
+
 # (str) Application versioning
-version = 1.2
+version = 1.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
