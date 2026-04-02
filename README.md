@@ -10,8 +10,6 @@ Want to try the app without compiling the code yourself? You can download the la
 
 **👉 [Download the Latest APK & Source Code Here](https://github.com/tasleemulhaq035-lgtm/Fraction-Solver/releases/latest)**
 
-*Note: GitHub automatically attaches the full Python source code (`.zip` and `.tar.gz`) to every release alongside the `.apk` file.*
-
 ---
 
 ## ✨ Features
