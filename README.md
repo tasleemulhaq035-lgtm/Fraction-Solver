@@ -4,6 +4,16 @@ A sleek, modern, multi-functional calculator application built entirely in Pytho
 
 ---
 
+## 🚀 Download the App
+
+Want to try the app without compiling the code yourself? You can download the latest Android `.apk` directly to your phone!
+
+**👉 [Download the Latest APK & Source Code Here](https://github.com/tasleemulhaq035-lgtm/Fraction-Solver/releases/latest)**
+
+*Note: GitHub automatically attaches the full Python source code (`.zip` and `.tar.gz`) to every release alongside the `.apk` file.*
+
+---
+
 ## ✨ Features
 
 ### 1. 🔢 The Fraction Engine (Primary Tab: ½)
@@ -16,7 +26,7 @@ Not just a calculator, but a step-by-step mathematical analyst. Enter any fracti
 
 ### 2. 🧮 Smart Calculator (Secondary Tab: =)
 A fully featured, daily-use calculator designed for speed and precision.
-* **Smart Rounding:** Floating-point math is capped at 8 decimal places to prevent screen overflow and `0.0000000001` graphical bugs.
+* **Smart Rounding:** Floating-point math is intelligently rounded to 8 decimal places to prevent screen overflow and `0.0000000001` graphical bugs.
 * **Percentage Support:** Built-in `%` parsing for quick real-world math.
 * **Sleek UI:** Custom `ModernButton` components with dynamic touch animations and shadow/bevel effects.
 
@@ -30,7 +40,7 @@ Never lose track of your work.
 
 ## 🎨 UI / UX Design
 This app does not use standard, rigid Kivy components. The interface was engineered from the ground up:
-* **Custom Navigation Bar:** Uses custom Kivy Canvas drawing to create "floating" navigation icons.
+* **Custom Navigation Bar:** Uses custom Kivy Canvas drawing to create "floating" navigation tabs.
 * **Active State Highlighting:** Selected tabs feature a sleek, dynamic Deep Orange (`#D35400`) pill-shaped background that automatically scales to `1.6x` width for a premium native-app feel.
 * **Absolute Light Theme:** A custom `LightBoxLayout` forces a pure, crisp (`#F4F6F9`) background, completely overriding Kivy's default dark textures.
 * **Dynamic Geometry:** Buttons automatically calculate their own corner radius based on screen size, ensuring they always remain perfectly proportioned pills/circles and never stretch into strange ovals.
@@ -46,19 +56,20 @@ To overcome standard `python-for-android` (p4a) limitations and Cython compilati
 * **Cython:** Locked precisely to `Cython==0.29.37` to guarantee successful Kivy C++ translation without silent failures.
 * **Engine:** Uses the `develop` branch of `python-for-android` to bypass critical file-copying bugs found in the current master branch.
 
-### How to Build the APK
-Because the GitHub Actions workflow is already fully configured, building a new version of the app is entirely automated:
-1. Make a change to `main.py` or `buildozer.spec`.
-2. Push the commit to the `main` or `master` branch.
-3. Go to the **Actions** tab in GitHub.
-4. Wait ~15-18 minutes for the cloud computer to complete the C++ compilation.
-5. Download the packaged `.apk` from the **Artifacts** section at the bottom of the successful run summary!
+### How to Build the APK Yourself
+Because the GitHub Actions workflow is already fully configured, building a new version of the app from source is entirely automated:
+1. Fork or clone this repository.
+2. Make a change to `main.py` or `buildozer.spec`.
+3. Push the commit to the `main` or `master` branch.
+4. Go to the **Actions** tab in GitHub.
+5. Wait ~15-18 minutes for the cloud computer to complete the C++ compilation.
+6. Download the newly packaged `.apk` from the **Artifacts** section at the bottom of the successful run summary!
 
 ---
 
 ## 🛠️ Tech Stack
 * **Language:** Python 3
-* **Framework:** Kivy / KivyMD (GUI)
+* **Framework:** Kivy (GUI)
 * **Compiler:** Buildozer / python-for-android
 * **Automation:** GitHub Actions
 
